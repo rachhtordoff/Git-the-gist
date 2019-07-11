@@ -1,0 +1,56 @@
+version: "3"
+services:
+  text_message_api:
+    build: ../apis/text-message-api
+    ports:
+      - "6015:8000"
+    volumes:
+      - ../apps/text-message-api:/opt
+    environment:
+      - FLASK_APP=manage.py
+      - APP_NAME=text-message-api
+      - FLASK_LOG_LEVEL=DEBUG
+      - PYTHONPATH=/opt
+      - SECRET_KEY=you-will-never-guess
+      - TEXT_ACCOUNT='AC1bf6273e71126b1787fff56327daaa9a'
+      - TEXT_TOKEN='4e84e1b48d1e230a520c73351df2a6ea'
+      - NUMBER_TO='07710836756'
+      - NUMBER_FROM='7bf0525b7c22784b9c80b8b8f8c4d36d'
+      - APM_ENABLED=False
+
+  github_api:
+    build: ../apis/github-api
+    ports:
+      - "6017:8000"
+    volumes:
+      - ../apps/github-api:/opt
+    environment:
+      - FLASK_APP=manage.py
+      - APP_NAME=github-api
+      - FLASK_LOG_LEVEL=DEBUG
+      - PYTHONPATH=/opt
+      - SECRET_KEY=you-will-never-guess
+      - APM_ENABLED=False
+
+
+  git_script:
+    build: ../scripts/git-the-gist
+    volumes:
+      - ../scripts/git-the-gist:/opt
+    links:
+      - text_message_api
+      - github_api
+    environment:
+      - GIT_API_URL=http://github_api:8000
+      - TEXT_API_URL=http://text_message_api:8000
+      - SECRET_KEY=you-will-never-guess
+
+  #commodities docker containers
+  postgres:
+    image: postgres:9.6
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=postgres
